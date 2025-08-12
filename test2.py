@@ -30,14 +30,17 @@ piano_keys = [
 
 note_to_key = {first_note_midi + transposition + i: key for i, key in enumerate(piano_keys)}
 
+# Caractères qui demandent Shift
 shift_chars = {"!", "@", "$", "%", "^", "*", "(", "Q", "W", "E", "T", "Y", "I", "O", "P",
                "S", "D", "G", "H", "J", "L", "Z", "C", "V", "B"}
 
+# Mapping pour les touches shiftées
 shift_base_key = {}
 for i, key in enumerate(piano_keys):
     if key in shift_chars:
         shift_base_key[key] = piano_keys[i - 1]
 
+# État des touches pressées
 pressed_keys = set()
 
 def press_key(key):
@@ -62,10 +65,12 @@ def release_key(key):
     else:
         keyboard.release(key)
 
+# -------- PRÉCONVERSION MIDI --------
 def preconvert_midi(file_path):
     midi = mido.MidiFile(file_path)
     events = []
     current_time = 0.0
+
     for msg in midi:
         current_time += msg.time
         if msg.type == 'note_on' and msg.velocity > 0:
@@ -76,8 +81,11 @@ def preconvert_midi(file_path):
                 heapq.heappush(events, (current_time, 'release', note_to_key[msg.note]))
     return events
 
+
+# -------- LECTURE ULTRA-PRÉCISE --------
 is_running = False
 play_thread = None
+
 midi_events = []
 
 def play_events(events):
